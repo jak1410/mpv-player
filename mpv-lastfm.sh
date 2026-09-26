@@ -1,0 +1,4 @@
+#!/bin/bash
+
+~/Documents/code/mpv-socket-follow-lastfm/mpv-listener.sh > /dev/null 2>&1 &
+disown
