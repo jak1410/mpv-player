@@ -18,29 +18,38 @@ if [ -z "$title" ] || [ "$title" = "null" ]; then
   exit 0
 fi
 
-full_path=$(find /home/jak/Music/ -type f -name "$title")
+while true; do
 
-title=$(echo "$title" | sed -E -e 's/\.(mp3|flac|wav|m4a|ogg|opus)$//i' -e 's/^[0-9][0-9] - //')  # we were using I for case insensitivity, but that's a GNU-ism. so we use i now (yes I know i isn't possix either)
+  sleep 55
 
-artist_name=$(echo "$full_path" | sed -e "s|${MUSIC_DIR}||" -e 's/\/.*$//')
+  title=$(query "media-title")
 
-# we get the album name by removing the song and artist. we then double check to make sure we didn't just
-# get the song again. Because if there is no album, that seems to happen
-album=$(echo "$full_path" | sed -e "s|${MUSIC_DIR}${artist_name}\/||" -e "s|\/.*${title}.*||")
-# if we did just get the song again it will have the file extension at the end
-# we use that to detect if the album exists
-albumerror=$(echo "$album" | grep -o '\....$')
+  full_path=$(find /home/jak/Music/ -type f -name "$title")
 
-if expr "$albumerror" : '^\....$' > /dev/null; then
+  title=$(echo "$title" | sed -E -e 's/\.(mp3|flac|wav|m4a|ogg|opus)$//i' -e 's/^[0-9][0-9] - //')  # we were using I for case insensitivity, but that's a GNU-ism. so we use i now (yes I know i isn't possix either)
 
-  #echo "no album"
-  true
+  artist_name=$(echo "$full_path" | sed -e "s|${MUSIC_DIR}||" -e 's/\/.*$//')
 
-else
+  # we get the album name by removing the song and artist. we then double check to make sure we didn't just
+  # get the song again. Because if there is no album, that seems to happen
+  album=$(echo "$full_path" | sed -e "s|${MUSIC_DIR}${artist_name}\/||" -e "s|\/.*${title}.*||")
+  # if we did just get the song again it will have the file extension at the end
+  # we use that to detect if the album exists
+  albumerror=$(echo "$album" | grep -o '\....$')
 
-  true 
+  if expr "$albumerror" : '^\....$' > /dev/null; then
 
-fi
+    #echo "no album"
+    ~/Documents/code/mpv-player-src/lastfmsupport/updatenowplaying.sh "$artist_name" "$title"
+
+  else
+
+    ~/Documents/code/mpv-player-src/lastfmsupport/updatenowplaying.sh "$artist_name" "$title" "$album"
+
+  fi
+
+done
+
 
 echo "$artist_name" "$title" "$album" "$albumerror"
 
