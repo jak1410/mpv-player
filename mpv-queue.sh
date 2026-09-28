@@ -41,7 +41,35 @@ case "$1" in
           | select($name != "*")
           | if .key == 0 then "▶ " + $name else "  " + $name end
         ')
-    notify-send "mpv queue:" "$response"
+
+    mpv_get() {
+      echo "{\"command\":[\"get_property\",\"$1\"]}" | socat - "$SOCKET" | jq -r '.data'
+    }
+
+    path=$(mpv_get path)
+
+    # mpv reports relative paths as given, so resolve them
+    case "$path" in
+      /*) ;;
+      *) path="$(mpv_get working-directory)/$path" ;;
+    esac
+
+    cover=/tmp/mpv_cover.png
+    if ! ffmpeg -y -loglevel error -i "$path" -an -frames:v 1 \
+         -vf scale=128:-1 "$cover" 2>/dev/null; then
+      cover="$(dirname "$path")/.cover.png"   # fallback if no embedded art
+    fi
+
+
+    # the -a music is a dunstrc thing I have. you can remove it but it makes the image size inconsistent without it
+    # if you want to actually use it. add this to your dunstrc (~/.config/dunst/dunstrc)
+    #
+    #[mycustom]
+    #  appname = music
+    #  max_icon_size = 64
+    #  frame_color = "#88c0d0"
+    #  timeout = 8
+    notify-send -a music -i "$cover" "mpv queue:" "$response"
     ;;
 
 esac
