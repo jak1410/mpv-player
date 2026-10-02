@@ -31,19 +31,24 @@ album=$(echo "$full_path" | sed -e "s|${MUSIC_DIR}${artist_name}\/||" -e "s|\/.*
 # we use that to detect if the album exists
 albumerror=$(echo "$album" | grep -o '\....$')
 
+actualtitle=$(echo "$title" | sed 's/⧸/\//g')
+
 if expr "$albumerror" : '^\....$' > /dev/null; then
 
 #echo "no album"
-~/Documents/code/mpv-socket-follow-lastfm/scrobble.sh "$artist_name" "$title"
-~/Documents/code/mpv-socket-follow-lastfm/updatenowplaying.sh "$artist_name" "$title"
+~/Documents/code/mpv-socket-follow-lastfm/scrobble.sh "$artist_name" "$actualtitle"
+~/Documents/code/mpv-socket-follow-lastfm/updatenowplaying.sh "$artist_name" "$actualtitle"
 
 else
 
-~/Documents/code/mpv-socket-follow-lastfm/scrobble.sh "$artist_name" "$title" "$album"
-~/Documents/code/mpv-socket-follow-lastfm/updatenowplaying.sh "$artist_name" "$title" "$album"
+actualalbum=$(echo "$album" | sed 's/⧸/\//g')
+
+~/Documents/code/mpv-socket-follow-lastfm/scrobble.sh "$artist_name" "$actualtitle" "$actualalbum"
+~/Documents/code/mpv-socket-follow-lastfm/updatenowplaying.sh "$artist_name" "$actualtitle" "$actualalbum"
 
 fi
 
-echo "$artist_name" "$title" "$album" "$albumerror"
+#this line is just for debugging
+#echo "$artist_name" "$actualtitle" "$album" "$actualalbum"
 
 
